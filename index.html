@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maze Runner - Minecraft Beta Style</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Courier New', monospace;
+        }
+        canvas { image-rendering: pixelated; }
+        #ui {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #fff;
+            text-shadow: 2px 2px 4px #000;
+            pointer-events: none;
+            text-align: right;
+            font-size: 14px;
+        }
+        #ui h2 { margin: 0 0 6px; }
+        #ui p { margin: 2px 0; }
+    </style>
+</head>
+<body>
+    <div id="ui">
+        <h2>מבוך מיינקראפט בטא</h2>
+        <p>חצים / WASD: תנועה וסיבוב</p>
+        <p>רווח: קפיצה | קליק שמאלי: תקיפה</p>
+        <p>E / קליק ימני: פתיחת תיבה, אכילה, שתייה</p>
+        <p>מגן: החזק קליק ימני כדי לחסום</p>
+        <p>1-9 / גלגלת: החלפת פריט בהוטבר</p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
