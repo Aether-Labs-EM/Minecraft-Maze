@@ -1,2 +1,6 @@
 # Minecraft-Maze
 game like minecraft but not minecraft more like a stupid game that have absolute no sense.......
+
+
+
+see Copyright license in the file...
