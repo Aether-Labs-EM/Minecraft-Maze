@@ -84,38 +84,11 @@ function barsCanvas() { // סורגי ברזל שקופים לשער היציא�
     return c;
 }
 
-function appleCanvas() {
-    const c = makeCanvas(16, 16), ctx = c.getContext('2d');
-    ctx.fillStyle = '#663300'; ctx.fillRect(7, 1, 2, 3);
-    ctx.fillStyle = '#33cc33'; ctx.fillRect(9, 2, 3, 2);
-    ctx.fillStyle = '#cc0000'; ctx.fillRect(4, 4, 8, 9);
-    ctx.fillStyle = '#ff9999'; ctx.fillRect(5, 5, 2, 2);
-    return c;
-}
 
-function swordCanvas() { // חרב אלכסונית
-    const c = makeCanvas(16, 16), ctx = c.getContext('2d');
-    for (let i = 0; i < 9; i++) {
-        const x = 14 - i, y = 1 + i;
-        ctx.fillStyle = '#ffffff'; ctx.fillRect(x, y, 1, 1);
-        ctx.fillStyle = '#c4c4c4'; ctx.fillRect(x - 1, y, 1, 1);
-        ctx.fillStyle = '#7a7a7a'; ctx.fillRect(x - 1, y + 1, 1, 1);
-    }
-    ctx.fillStyle = '#c8a040';
-    [[4,8],[5,9],[6,10],[7,11],[8,12]].forEach(([x, y]) => ctx.fillRect(x, y, 1, 1));
-    ctx.fillStyle = '#6b4423';
-    [[5,11],[4,12],[3,13],[2,14]].forEach(([x, y]) => ctx.fillRect(x, y, 1, 1));
-    ctx.fillStyle = '#c8a040'; ctx.fillRect(1, 15, 1, 1);
-    return c;
-}
 
 // ===== אייטמים, עץ, תיבה, שמש (פיקסל ארט) =====
 function fillRects(ctx, list) { list.forEach(([col, x, y, w, h]) => { ctx.fillStyle = col; ctx.fillRect(x, y, w, h); }); }
 function rectsCanvas(list) { const c = makeCanvas(16, 16); fillRects(c.getContext('2d'), list); return c; }
-const breadCanvas = () => rectsCanvas([['#8a5a22',2,6,12,6],['#c68a3b',3,5,10,6],['#e0a95a',4,5,8,2],['#a8702d',3,11,10,1],['#e8c07a',5,7,1,1],['#e8c07a',8,6,1,1],['#e8c07a',10,8,1,1]]);
-const steakCanvas = () => rectsCanvas([['#4a2412',3,4,10,9],['#7a3b1d',4,5,8,7],['#a8562a',5,6,5,4],['#eeeeee',11,9,3,3],['#cfcfcf',12,10,1,1]]);
-const gappleCanvas = () => rectsCanvas([['#663300',7,1,2,3],['#33cc33',9,2,3,2],['#d9a300',4,4,8,9],['#ffd700',5,5,6,7],['#fff6a8',5,5,2,2]]);
-const shieldCanvas = () => rectsCanvas([['#555',3,1,10,11],['#7a4a1e',4,2,8,9],['#555',4,12,8,1],['#555',5,13,6,1],['#555',6,14,4,1],['#9a6a32',4,2,4,9],['#cfcfcf',6,5,4,4],['#888',7,6,2,2]]);
 const compassCanvas = () => rectsCanvas([['#555',3,1,10,14],['#555',1,3,14,10],['#d8d8d8',3,3,10,10],['#d02020',7,4,2,4],['#ffffff',7,8,2,4],['#222',7,7,2,2]]);
 const potionCanvas = col => rectsCanvas([['#dfe9f0',7,1,2,2],['#dfe9f0',6,3,4,1],['#9fb4c0',4,4,8,10],[col,5,7,6,6],['#ffffff',5,5,1,2]]);
 
@@ -149,6 +122,86 @@ function leavesCanvas() {
     return c;
 }
 function sunCanvas() { return rectsCanvas([['#ffe46b', 0, 0, 16, 16], ['#fff3a0', 2, 2, 12, 12], ['#ffffff', 4, 4, 8, 8]]); }
+
+
+// ===== אייטמים בפיקסל ארט עם קו מתאר כהה (כמו במיינקראפט) =====
+function outlineCanvas(c) {
+    const ctx = c.getContext('2d'), w = c.width, h = c.height, d = ctx.getImageData(0, 0, w, h).data;
+    const solid = (x, y) => x >= 0 && y >= 0 && x < w && y < h && d[(y * w + x) * 4 + 3] > 0;
+    ctx.fillStyle = '#1c1c1c';
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        if (solid(x, y)) continue;
+        let near = false;
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (solid(x + dx, y + dy)) near = true;
+        if (near) ctx.fillRect(x, y, 1, 1);
+    }
+    return c;
+}
+function pixelsCanvas(list) {
+    const c = makeCanvas(16, 16), ctx = c.getContext('2d');
+    list.forEach(([col, x, y]) => { ctx.fillStyle = col; ctx.fillRect(x, y, 1, 1); });
+    return c;
+}
+function swordCanvas() { // חרב ברזל: להב אלכסוני, מגן יד חום-זהב וידית חומה
+    const px = [];
+    for (let i = 0; i < 9; i++) {
+        px.push(['#f4f4f4', 14 - i, 1 + i], ['#c9c9c9', 13 - i, 1 + i]);
+        if (i > 0 && i < 8) px.push(['#9a9a9a', 12 - i, 1 + i]);
+    }
+    [[2, 9], [3, 10], [4, 11], [5, 12], [6, 13]].forEach(([x, y]) => px.push(['#c8a040', x, y], ['#8a6a20', x + 1, y]));
+    [[3, 12], [2, 13], [1, 14]].forEach(([x, y]) => px.push(['#7a4a1e', x, y], ['#a0652d', x + 1, y]));
+    px.push(['#c8a040', 1, 14]);
+    return outlineCanvas(pixelsCanvas(px));
+}
+function shieldCanvas() { // מגן עץ עם מסגרת ברזל ופטמה במרכז
+    const c = makeCanvas(16, 16), ctx = c.getContext('2d');
+    const hw = y => y <= 9 ? 5 : y <= 11 ? 4 : y === 12 ? 3 : y === 13 ? 2 : 1;
+    const inS = (x, y) => y >= 1 && y <= 14 && Math.abs(x - 7.5) < hw(y);
+    for (let y = 1; y <= 14; y++) for (let x = 0; x < 16; x++) {
+        if (!inS(x, y)) continue;
+        const edge = !inS(x - 1, y) || !inS(x + 1, y) || !inS(x, y - 1) || !inS(x, y + 1);
+        ctx.fillStyle = edge ? (y < 4 ? '#e0e0e0' : '#a8a8a8') : (x % 3 === 0 ? '#8a5a2b' : '#a9733a');
+        ctx.fillRect(x, y, 1, 1);
+    }
+    fillRects(ctx, [['#d6d6d6', 6, 5, 4, 4], ['#8a8a8a', 7, 6, 2, 2], ['#ffffff', 6, 5, 1, 1]]);
+    return outlineCanvas(c);
+}
+function fruitCanvas(base, light, dark) {
+    const c = makeCanvas(16, 16), ctx = c.getContext('2d');
+    for (let y = 3; y < 15; y++) for (let x = 2; x < 14; x++) {
+        const dx = x - 7.5, dy = y - 9;
+        if (dx * dx + dy * dy > 27 || (Math.abs(dx) < 1 && y === 3)) continue;
+        let col = base;
+        if ((dx + 3) ** 2 + (dy + 2.5) ** 2 < 5) col = light; else if (dx + dy > 3.5) col = dark;
+        ctx.fillStyle = col; ctx.fillRect(x, y, 1, 1);
+    }
+    fillRects(ctx, [['#5a3a1a', 7, 1, 1, 3], ['#3f9a2e', 8, 1, 3, 1], ['#2e7a20', 9, 2, 2, 1]]);
+    return outlineCanvas(c);
+}
+function appleCanvas() { return fruitCanvas('#d62020', '#ff7a70', '#8e1010'); }
+function gappleCanvas() { return fruitCanvas('#f2c200', '#fff08a', '#b78400'); }
+function steakCanvas() {
+    const c = makeCanvas(16, 16), ctx = c.getContext('2d');
+    for (let y = 2; y < 15; y++) for (let x = 1; x < 15; x++) {
+        const dx = (x - 7.5) / 6.3, dy = (y - 8) / 5.2, q = dx * dx + dy * dy;
+        if (q > 1) continue;
+        ctx.fillStyle = q > 0.7 ? '#5e2f12' : (x + y) % 4 === 0 ? '#4a230d' : dx + dy < -0.3 ? '#b5703a' : '#8a4a22';
+        ctx.fillRect(x, y, 1, 1);
+    }
+    fillRects(ctx, [['#f0e6d0', 11, 10, 3, 3], ['#c9bfa8', 12, 11, 1, 1]]);
+    return outlineCanvas(c);
+}
+function breadCanvas() {
+    const c = makeCanvas(16, 16), ctx = c.getContext('2d');
+    for (let y = 4; y < 13; y++) for (let x = 1; x < 15; x++) {
+        const dx = Math.abs(x - 7.5) / 6.5, dy = Math.abs(y - 8) / 4.3;
+        if (dx ** 4 + dy ** 4 > 1) continue;
+        ctx.fillStyle = y < 7 ? '#e6b566' : y > 10 ? '#8f5f26' : '#c58a3a';
+        ctx.fillRect(x, y, 1, 1);
+    }
+    fillRects(ctx, [['#a8702d', 5, 6, 1, 3], ['#a8702d', 8, 6, 1, 3], ['#a8702d', 11, 6, 1, 3]]);
+    return outlineCanvas(c);
+}
 
 // לבבות ואוכל בסגנון מיינקראפט
 const HEART = ['.BBB.BBB.', 'BRWRBRRRB', 'BRRRRRRRB', 'BRRRRRRRB', '.BRRRRRB.', '..BRRRB..', '...BRB...', '....B....', '.........'];
@@ -205,7 +258,7 @@ const zombieSkin = createZombieSkin();
 const appleURL = appleCanvas().toDataURL();
 const swordURL = swordCanvas().toDataURL();
 const iconCanvases = { sword: swordCanvas(), apple: appleCanvas(), bread: breadCanvas(), steak: steakCanvas(), gapple: gappleCanvas(),
-    shield: shieldCanvas(), compass: compassCanvas(), speed: potionCanvas('#7fd1ff'), strength: potionCanvas('#c0302a') };
+    shield: shieldCanvas(), compass: outlineCanvas(compassCanvas()), speed: outlineCanvas(potionCanvas('#7fd1ff')), strength: outlineCanvas(potionCanvas('#c0302a')) };
 const iconURLs = {};
 Object.keys(iconCanvases).forEach(k => iconURLs[k] = iconCanvases[k].toDataURL());
 const iconTex = {};
@@ -317,6 +370,8 @@ addTorches(ENTRY_X, 0);
 // ===== 5b. עולם בסגנון בטא: עצים, שמש, עננים, תיבות =====
 const rng = mulberry32(99);
 const treeSpots = [];
+const solidBoxes = [];
+const CAVE = { x: GX, z0: 62, depth: 6 };
 function addTree(x, z) {
     treeSpots.push({ x, z });
     const parts = [
@@ -327,7 +382,7 @@ function addTree(x, z) {
 for (let r = -3; r < OUT_MAX_R; r++) for (let c = OUT_MIN_C; c < OUT_MAX_C; c++) {
     const outside = r > mazeSize || (r >= 0 && r < mazeSize && (c < 0 || c >= mazeSize));
     const lane = r >= mazeSize && c >= EXIT_COL - 1 && c <= EXIT_COL + 1;
-    if (outside && !lane && rng() < 0.2) addTree(c * BLOCK_SIZE + (rng() - 0.5), r * BLOCK_SIZE + (rng() - 0.5));
+    if (outside && !lane && rng() < 0.2 && !(r >= 29 && r <= 34 && c >= 19 && c <= 27)) addTree(c * BLOCK_SIZE + (rng() - 0.5), r * BLOCK_SIZE + (rng() - 0.5));
 }
 
 const sun = new THREE.Sprite(new THREE.SpriteMaterial({ map: toTexture(sunCanvas()), fog: false }));
@@ -343,6 +398,21 @@ for (let i = 0; i < 22; i++) {
     scene.add(m);
     clouds.push(m);
 }
+
+// פתח מערה (שלב 2): תל אבן עם מנהרה חשוכה
+(function buildCaveMouth() {
+    const mat = new THREE.MeshLambertMaterial({ map: toTexture(cobbleCanvas(), 5, 5) });
+    const add = (w, h, d, x, y, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); scene.add(m); };
+    const zc = CAVE.z0 + CAVE.depth / 2;
+    add(5, 5.5, CAVE.depth, CAVE.x - 3.7, FLOOR_Y + 2.75, zc);
+    add(5, 5.5, CAVE.depth, CAVE.x + 3.7, FLOOR_Y + 2.75, zc);
+    add(12.4, 2.5, CAVE.depth, CAVE.x, FLOOR_Y + 4.25, zc);
+    const back = new THREE.Mesh(new THREE.BoxGeometry(2.4, 3, 0.2), new THREE.MeshBasicMaterial({ color: 0x000000 }));
+    back.position.set(CAVE.x, FLOOR_Y + 1.5, CAVE.z0 + CAVE.depth - 0.1);
+    scene.add(back);
+    [[CAVE.x - 6.2, CAVE.x - 1.2], [CAVE.x + 1.2, CAVE.x + 6.2]].forEach(([a, b]) => solidBoxes.push({ minX: a, maxX: b, minZ: CAVE.z0, maxZ: CAVE.z0 + CAVE.depth }));
+    addTorches(CAVE.x, CAVE.z0 + 0.85);
+})();
 
 // תיבות בנקודות מבוי סתום
 const chests = [];
@@ -424,6 +494,7 @@ emptyPathSpots
     .slice(0, ZOMBIE_COUNT)
     .forEach(s => zombies.push(createZombie(s.c * BLOCK_SIZE, s.r * BLOCK_SIZE)));
 
+camera.rotation.order = 'YXZ';
 const EYE_Y = 0.8; // גובה העיניים (השחקן ≈ 1.7 מעל הרצפה)
 camera.position.set(1 * BLOCK_SIZE, EYE_Y, -2.5 * BLOCK_SIZE);
 
@@ -470,6 +541,7 @@ body{font-family:'Courier New',monospace}
 #prompt,#loot{position:absolute;left:50%;transform:translateX(-50%);color:#fff;font-weight:bold;text-shadow:2px 2px #000;text-align:center;pointer-events:none}
 #prompt{top:58%;font-size:20px;display:none}
 #loot{top:30%;font-size:24px;color:#ffd24a;opacity:0;transition:opacity .4s;line-height:1.5}
+#lockHint{position:absolute;top:45%;left:50%;transform:translateX(-50%);color:#fff;font-size:22px;font-weight:bold;text-shadow:2px 2px #000;background:rgba(0,0,0,.5);padding:8px 14px;pointer-events:none}
 #fx{position:absolute;top:165px;left:15px;color:#fff;font-weight:bold;font-size:15px;text-shadow:2px 2px #000;pointer-events:none}
 `;
 document.head.appendChild(css);
@@ -478,7 +550,7 @@ const hud = document.createElement('div');
 hud.id = 'hud';
 hud.innerHTML = `<div id="itemName"></div><div class="irow" id="armor"></div><div id="stats"><div class="irow" id="hearts"></div><div class="irow rev" id="food"></div></div><div id="hotbar"></div>`;
 document.body.appendChild(hud);
-document.body.insertAdjacentHTML('beforeend', '<div id="cross"></div><div id="flash"></div><div id="prompt">E / קליק ימני: לפתוח תיבה</div><div id="loot"></div><div id="fx"></div>');
+document.body.insertAdjacentHTML('beforeend', '<div id="cross"></div><div id="flash"></div><div id="prompt">E / קליק ימני: לפתוח תיבה</div><div id="loot"></div><div id="fx"></div><div id="lockHint">לחץ על המסך כדי לשלוט בעכבר</div>');
 
 const ARMOR_PAT = ['.BBB.BBB.', 'BGGGBGGGB', 'BGGGGGGGB', '.BGGGGGB.', '.BGGGGGB.', '.BGGGGGB.', '.BGGGGGB.', '..BBBBB..', '.........'];
 const ARMOR_PAL = { B: '#000', G: '#d8d8d8', E: '#3a3a3a' };
@@ -489,7 +561,7 @@ for (let i = 0; i < 10; i++) { heartsEl.appendChild(new Image()); foodEl.appendC
 
 // ===== אייטמים =====
 const ITEMS = {
-    sword: { name: 'חרב ברזל' },
+    sword: { name: 'חרב ברזל (קליק ימני לחסימה)' },
     apple: { name: 'תפוח', use: 'eat', food: 30, heal: 25, crumb: '#cc0000' },
     bread: { name: 'לחם', use: 'eat', food: 35, heal: 5, crumb: '#c68a3b' },
     steak: { name: 'סטייק', use: 'eat', food: 55, heal: 10, crumb: '#8a4a22' },
@@ -557,7 +629,7 @@ let escaped = false;
 const pops = [];
 const U = () => Math.min(window.innerWidth, window.innerHeight) / 100;
 const hasItem = id => hotbar.some(h => h && h.id === id);
-const blockingNow = () => rmbDown && hotbar[selSlot] && hotbar[selSlot].id === 'shield';
+const blockingNow = () => rmbDown && hotbar[selSlot] && (hotbar[selSlot].id === 'shield' || hotbar[selSlot].id === 'sword');
 
 function refreshHotbar() {
     slotEls.forEach((el, i) => {
@@ -697,7 +769,7 @@ function damagePlayer(amount, zx, zz) {
     const fx = -Math.sin(camera.rotation.y), fz = -Math.cos(camera.rotation.y);
     const dx = zx - camera.position.x, dz = zz - camera.position.z, d = Math.hypot(dx, dz) || 1;
     const blocked = blockingNow() && (dx * fx + dz * fz) / d > 0.2;
-    if (blocked) amount *= 0.1;
+    if (blocked) amount *= hotbar[selSlot].id === 'shield' ? 0.1 : 0.5;
     amount *= 1 - Math.min(0.8, armorPts() * 0.04);
     health -= amount;
     flashA = blocked ? 0.15 : 0.55;
@@ -746,6 +818,7 @@ window.addEventListener('keydown', e => {
 });
 window.addEventListener('keyup', e => keys[e.code] = false);
 window.addEventListener('mousedown', e => {
+    if (!locked()) return;
     if (e.button === 0) swingSwordAndAttack();
     if (e.button === 2) {
         rmbDown = true;
@@ -755,12 +828,21 @@ window.addEventListener('mousedown', e => {
 });
 window.addEventListener('mouseup', e => { if (e.button === 2) rmbDown = false; });
 window.addEventListener('contextmenu', e => e.preventDefault());
+const canvasEl = renderer.domElement;
+const locked = () => document.pointerLockElement === canvasEl;
+canvasEl.addEventListener('click', () => { if (!locked() && !gameOver) canvasEl.requestPointerLock(); });
+window.addEventListener('mousemove', e => {
+    if (!locked() || gameOver) return;
+    camera.rotation.y -= e.movementX * 0.0022;
+    camera.rotation.x = Math.max(-1.2, Math.min(1.2, camera.rotation.x - e.movementY * 0.0022));
+});
 window.addEventListener('wheel', e => selectSlot((selSlot + (e.deltaY > 0 ? 1 : 8)) % 9));
 
 // ===== 9. התנגשויות =====
 function checkPosition(x, z, forZombie = false) {
     const radius = 0.4;
     for (const t of treeSpots) if (Math.hypot(x - t.x, z - t.z) < 0.85) return 'wall';
+    for (const b of solidBoxes) if (x + 0.4 > b.minX && x - 0.4 < b.maxX && z + 0.4 > b.minZ && z - 0.4 < b.maxZ) return 'wall';
     const pts = [[x + radius, z + radius], [x - radius, z + radius], [x + radius, z - radius], [x - radius, z - radius]];
     for (const [px, pz] of pts) {
         const col = Math.round(px / BLOCK_SIZE), row = Math.round(pz / BLOCK_SIZE);
@@ -805,6 +887,8 @@ function updateZombie(z, dt, t, playerInside) {
         if (z.y <= 0) { z.y = 0; z.vy = 0; }
     }
 
+    if (z.kind === 'skeleton') return updateSkeleton(z, dt);
+    if (z.kind === 'spider') return updateSpider(z, dt);
     const dxp = camera.position.x - z.x, dzp = camera.position.z - z.z, dist = Math.hypot(dxp, dzp);
     const zr = Math.round(z.z / BLOCK_SIZE), zc = Math.round(z.x / BLOCK_SIZE);
     const fv = distField && zr >= 0 && zc >= 0 && zr < mazeSize && zc < mazeSize ? distField[zr][zc] : Infinity;
@@ -864,7 +948,7 @@ function drawMinimap() {
         if (x > 0 && x < 130 && y > 0 && y < 130) { minimapCtx.fillStyle = col; minimapCtx.fillRect(x - 3, y - 3, 6, 6); }
     };
     chests.forEach(c => { if (!c.open) dot(c.root.position.x, c.root.position.z, '#ffd24a'); });
-    zombies.forEach(z => { if (!z.dying) dot(z.x, z.z, '#4caf50'); });
+    zombies.forEach(z => { if (!z.dying) dot(z.x, z.z, z.kind === 'skeleton' ? '#e0e0e0' : z.kind === 'spider' ? '#c04030' : '#4caf50'); });
     minimapCtx.fillStyle = '#f00';
     minimapCtx.beginPath(); minimapCtx.arc(65, 65, 5, 0, Math.PI * 2); minimapCtx.fill();
     minimapCtx.strokeStyle = '#ff0'; minimapCtx.lineWidth = 2;
@@ -875,6 +959,242 @@ function drawMinimap() {
         const dx = GX - camera.position.x, dz = GZ - camera.position.z, d = Math.hypot(dx, dz) || 1;
         minimapCtx.fillStyle = '#00e5ff';
         minimapCtx.beginPath(); minimapCtx.arc(65 + dx / d * 52, 65 + dz / d * 52, 6, 0, Math.PI * 2); minimapCtx.fill();
+    }
+}
+
+// ===== 13. שלב 2: המערה =====
+let stage = 1;
+const torches = [], torchLights = [], arrows = [];
+const arrowMat = new THREE.MeshLambertMaterial({ color: 0x8b6b3a });
+
+function caveStoneCanvas() {
+    const c = makeCanvas(16, 16), ctx = c.getContext('2d'), rand = mulberry32(31);
+    noiseRect(ctx, 0, 0, 16, 16, [112, 112, 112], 9, rand);
+    ctx.fillStyle = 'rgba(55,55,55,0.55)';
+    for (let i = 0; i < 14; i++) ctx.fillRect((rand() * 16) | 0, (rand() * 16) | 0, 1, 1);
+    return c;
+}
+function flameCanvas() {
+    const c = makeCanvas(8, 8);
+    fillRects(c.getContext('2d'), [['#ff4a00', 3, 0, 2, 1], ['#ff7a00', 2, 1, 4, 2], ['#ffb000', 2, 3, 4, 3], ['#ffe36a', 3, 4, 2, 3]]);
+    return c;
+}
+const flameTex = toTexture(flameCanvas());
+
+function startCave() {
+    stage = 2; escaped = false; exitOpen = false; use = null;
+    [...scene.children].forEach(o => scene.remove(o));
+    zombies.length = 0; chests.length = 0; foodItems.length = 0; pops.length = 0; clouds.length = 0; treeSpots.length = 0; solidBoxes.length = 0;
+    scene.background = new THREE.Color(0x030303);
+    scene.fog = new THREE.FogExp2(0x030303, 0.06);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.2));
+
+    for (let r = 0; r < mazeSize; r++) map[r].fill(1);
+    generateMaze(1, 1);
+    map[EXIT_ROW][EXIT_COL] = 2;
+    const wallMat = new THREE.MeshLambertMaterial({ map: toTexture(caveStoneCanvas(), 2, 5) });
+    const slabMat = new THREE.MeshLambertMaterial({ map: toTexture(caveStoneCanvas(), 54, 54) });
+    [[FLOOR_Y, -Math.PI / 2], [WALL_HEIGHT - 1, Math.PI / 2]].forEach(([y, rx]) => { // רצפה ותקרה סגורה
+        const m = new THREE.Mesh(new THREE.PlaneGeometry(54, 54), slabMat);
+        m.rotation.x = rx; m.position.set(24, y, 24);
+        scene.add(m);
+    });
+    for (let r = 0; r < mazeSize; r++) for (let c = 0; c < mazeSize; c++) if (map[r][c] === 1) addWall(c, r, wallMat);
+
+    // שער זהב זוהר ביציאה
+    const gold = new THREE.Mesh(new THREE.BoxGeometry(2, 3.4, 0.4), new THREE.MeshBasicMaterial({ color: 0xffd24a }));
+    gold.position.set(GX, 0.8, GZ);
+    const goldLight = new THREE.PointLight(0xffd24a, 1.2, 10);
+    goldLight.position.set(GX, 0.8, GZ - 1.3);
+    scene.add(gold, goldLight);
+
+    // לפידים כל ~4-5 בלוקים (אורות מוקצים דינמית ל־8 הלפידים הקרובים)
+    torches.length = 0;
+    const stickMat = new THREE.MeshLambertMaterial({ color: 0x6b4423 }), flameMat = new THREE.SpriteMaterial({ map: flameTex });
+    for (let i = 0; i < 12; i++) for (let j = 0; j < 12; j++) {
+        const r = 2 * i + 1, c = 2 * j + 1;
+        if (map[r][c] !== 0 || (i * 2 + j * 3) % 5 !== 0) continue;
+        const d = [[1, 0], [-1, 0], [0, 1], [0, -1]].find(([dr, dc]) => map[r + dr][c + dc] === 1);
+        if (!d) continue;
+        const x = c * BLOCK_SIZE + d[1] * 0.9, z = r * BLOCK_SIZE + d[0] * 0.9;
+        const stick = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.5, 0.12), stickMat);
+        stick.position.set(x, 0.5, z);
+        const flame = new THREE.Sprite(flameMat);
+        flame.scale.set(0.38, 0.38, 1); flame.position.set(x, 0.95, z);
+        scene.add(stick, flame);
+        torches.push({ x, y: 1.1, z });
+    }
+    if (!torchLights.length) for (let k = 0; k < 8; k++) torchLights.push(new THREE.PointLight(0xffa24a, 1.6, 13));
+    torchLights.forEach(l => scene.add(l));
+
+    const paths = [];
+    for (let r = 1; r < mazeSize; r += 2) for (let c = 1; c < mazeSize; c += 2) if (map[r][c] === 0) paths.push({ r, c });
+    const far = paths.filter(s => Math.abs(s.r - 1) + Math.abs(s.c - 1) > 6).sort(() => Math.random() - 0.5);
+    const openN = (r, c) => [[1, 0], [-1, 0], [0, 1], [0, -1]].filter(([dr, dc]) => map[r + dr] && map[r + dr][c + dc] === 0).length;
+    far.filter(s => openN(s.r, s.c) === 1).slice(0, 6).forEach(s => createChest(s.r, s.c));
+    far.slice(0, 5).forEach(s => zombies.push(createSkeleton(s.c * BLOCK_SIZE, s.r * BLOCK_SIZE)));
+    far.slice(5, 11).forEach(s => zombies.push(createSpider(s.c * BLOCK_SIZE, s.r * BLOCK_SIZE)));
+
+    camera.position.set(BLOCK_SIZE, EYE_Y, BLOCK_SIZE);
+    camera.rotation.set(0, Math.PI, 0);
+    py = 0; pvy = 0; lastCell = ''; distField = null;
+    health = Math.min(100, health + 25);
+    showAlert('שלב 2: המערה - מצא את שער הזהב', '#cccccc');
+}
+
+function updateCave(dt, t) {
+    updateArrows(dt);
+    const d2 = a => (a.x - camera.position.x) ** 2 + (a.z - camera.position.z) ** 2;
+    const near = torches.slice().sort((a, b) => d2(a) - d2(b));
+    torchLights.forEach((l, k) => {
+        const tt = near[k];
+        if (tt) { l.position.set(tt.x, tt.y, tt.z); l.intensity = 1.5 + Math.sin(t * 9 + k * 3) * 0.2; } else l.intensity = 0;
+    });
+}
+
+function hasLOS(x1, z1, x2, z2) {
+    const n = Math.ceil(Math.hypot(x2 - x1, z2 - z1) / 0.4);
+    for (let i = 1; i < n; i++) {
+        const k = i / n, c = Math.round((x1 + (x2 - x1) * k) / BLOCK_SIZE), r = Math.round((z1 + (z2 - z1) * k) / BLOCK_SIZE);
+        if (map[r] && map[r][c] !== 0) return false;
+    }
+    return true;
+}
+
+// צעד לעבר השחקן לפי שדה המרחקים (כמו הזומבים)
+function chaseStep(z, dt, speed, dist, stopDist) {
+    const zr = Math.round(z.z / BLOCK_SIZE), zc = Math.round(z.x / BLOCK_SIZE);
+    const fv = distField && zr >= 0 && zc >= 0 && zr < mazeSize && zc < mazeSize ? distField[zr][zc] : Infinity;
+    if (fv > 14 && dist > 3) return false;
+    let tx = camera.position.x, tz = camera.position.z;
+    if (dist >= 2.2 && fv > 0 && fv < Infinity) {
+        let best = fv, bc = null;
+        for (const [dr, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+            const nr = zr + dr, nc = zc + dc;
+            if (nr >= 0 && nc >= 0 && nr < mazeSize && nc < mazeSize && distField[nr][nc] < best) { best = distField[nr][nc]; bc = [nr, nc]; }
+        }
+        if (bc) { tx = bc[1] * BLOCK_SIZE; tz = bc[0] * BLOCK_SIZE; }
+    }
+    const dx = tx - z.x, dz = tz - z.z, d = Math.hypot(dx, dz) || 1;
+    if (dist <= stopDist) return false;
+    moveEntity(z, (dx / d) * speed * dt, (dz / d) * speed * dt, true);
+    return true;
+}
+
+const boxMesh = (w, h, d, m, x, y, z, parent) => { const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); mesh.position.set(x, y, z); parent.add(mesh); return mesh; };
+const baseMonster = (root, model, mat, hp, kind) => ({ root, model, mat, kind, x: root.position.x, z: root.position.z, vx: 0, vz: 0, y: 0, vy: 0,
+    hp, hurt: 0, stun: 0, dying: false, deathT: 0, phase: Math.random() * 6, attackCd: 0.6, moving: false });
+
+// שלד: גוף דק מעצמות, עיניים וקשת
+function createSkeleton(x, z) {
+    const mat = new THREE.MeshLambertMaterial({ color: 0xdedbd0 }), dark = new THREE.MeshBasicMaterial({ color: 0x111111 });
+    const root = new THREE.Group(); root.position.set(x, FLOOR_Y, z);
+    const model = new THREE.Group(); root.add(model);
+    const P = PX;
+    const head = new THREE.Group(); head.position.y = 24 * P; model.add(head);
+    boxMesh(8 * P, 8 * P, 8 * P, mat, 0, 4 * P, 0, head);
+    boxMesh(1.8 * P, 1.8 * P, 0.4 * P, dark, -2 * P, 4.5 * P, 4.1 * P, head);
+    boxMesh(1.8 * P, 1.8 * P, 0.4 * P, dark, 2 * P, 4.5 * P, 4.1 * P, head);
+    boxMesh(3 * P, 1 * P, 0.4 * P, dark, 0, 1.5 * P, 4.1 * P, head);
+    boxMesh(6 * P, 12 * P, 3 * P, mat, 0, 18 * P, 0, model);
+    [21, 18.5, 16].forEach(y => boxMesh(6.1 * P, 0.9 * P, 3.1 * P, dark, 0, y * P, 0, model));
+    const limb = (px, py, cy) => { const g = new THREE.Group(); g.position.set(px * P, py * P, 0); boxMesh(2 * P, 12 * P, 2 * P, mat, 0, cy * P, 0, g); model.add(g); return g; };
+    const armL = limb(4, 22, -4), armR = limb(-4, 22, -4), legL = limb(1.5, 12, -6), legR = limb(-1.5, 12, -6);
+    armL.rotation.x = armR.rotation.x = -Math.PI / 2;
+    const bowMat = new THREE.MeshLambertMaterial({ color: 0x6b4423 });
+    const bow = new THREE.Group(); bow.position.set(-4 * P, 22 * P, 11 * P); model.add(bow);
+    boxMesh(0.6 * P, 10 * P, 0.6 * P, bowMat, 0, 0, 0, bow);
+    [1, -1].forEach(sg => { const l = boxMesh(0.6 * P, 5 * P, 0.6 * P, bowMat, 0, sg * 7 * P, -1 * P, bow); l.rotation.x = sg * 0.5; });
+    boxMesh(0.2 * P, 12 * P, 0.2 * P, new THREE.MeshBasicMaterial({ color: 0xcccccc }), 0, 0, -3 * P, bow);
+    scene.add(root);
+    return Object.assign(baseMonster(root, model, mat, 14, 'skeleton'), { legL, legR, armL, armR, shootCd: 1 + Math.random() * 2, strafe: 1, strafeT: 0 });
+}
+
+// עכביש: נמוך, רחב, עיניים אדומות זוהרות ו־8 רגליים
+function createSpider(x, z) {
+    const mat = new THREE.MeshLambertMaterial({ color: 0x2b1d15 }), eyeMat = new THREE.MeshBasicMaterial({ color: 0xff2020 });
+    const root = new THREE.Group(); root.position.set(x, FLOOR_Y, z);
+    const model = new THREE.Group(); root.add(model);
+    boxMesh(0.7, 0.32, 0.55, mat, 0, 0.32, 0.1, model);
+    boxMesh(0.85, 0.42, 0.9, mat, 0, 0.36, -0.6, model);
+    boxMesh(0.4, 0.3, 0.4, mat, 0, 0.3, 0.5, model);
+    [[-0.1, 0.36], [0.1, 0.36], [-0.14, 0.25], [0.14, 0.25]].forEach(([ex, ey]) => boxMesh(0.07, 0.07, 0.04, eyeMat, ex, ey, 0.71, model));
+    const legs = [];
+    [1, -1].forEach(sg => [0.3, 0.1, -0.1, -0.3].forEach((zo, k) => {
+        const piv = new THREE.Group(); piv.position.set(sg * 0.3, 0.3, zo);
+        piv.rotation.z = -sg * 0.6; piv.base = sg * (0.35 - k * 0.2); piv.rotation.y = piv.base;
+        boxMesh(0.75, 0.06, 0.06, mat, sg * 0.37, 0, 0, piv);
+        model.add(piv); legs.push(piv);
+    }));
+    scene.add(root);
+    return Object.assign(baseMonster(root, model, mat, 12, 'spider'), { legs });
+}
+
+function updateSkeleton(z, dt) {
+    const dxp = camera.position.x - z.x, dzp = camera.position.z - z.z, dist = Math.hypot(dxp, dzp) || 1;
+    z.moving = false;
+    z.shootCd -= dt;
+    const los = dist < 16 && hasLOS(z.x, z.z, camera.position.x, camera.position.z);
+    if (z.stun <= 0 && dist < 22) {
+        z.root.rotation.y = Math.atan2(dxp, dzp);
+        if (los) {
+            if (dist < 4) { moveEntity(z, -dxp / dist * 2.2 * dt, -dzp / dist * 2.2 * dt, true); z.moving = true; } // שומר מרחק
+            else if (dist > 8) z.moving = chaseStep(z, dt, 1.6, dist, 8);
+            else {
+                z.strafeT -= dt;
+                if (z.strafeT <= 0) { z.strafeT = 1 + Math.random() * 1.5; z.strafe = Math.random() < 0.5 ? -1 : 1; }
+                moveEntity(z, -dzp / dist * z.strafe * 1.2 * dt, dxp / dist * z.strafe * 1.2 * dt, true); z.moving = true;
+            }
+            if (z.shootCd <= 0) { z.shootCd = 1.8 + Math.random(); shootArrow(z); }
+        } else z.moving = chaseStep(z, dt, 1.6, dist, 0.5);
+    }
+    z.phase += z.moving ? dt * 7 : dt;
+    const sw = z.moving ? 0.6 : 0.03;
+    z.legL.rotation.x = Math.sin(z.phase) * sw; z.legR.rotation.x = -Math.sin(z.phase) * sw;
+    z.root.position.set(z.x, FLOOR_Y + z.y, z.z);
+}
+
+function updateSpider(z, dt) {
+    const dxp = camera.position.x - z.x, dzp = camera.position.z - z.z, dist = Math.hypot(dxp, dzp) || 1;
+    z.moving = false;
+    z.attackCd -= dt;
+    if (z.stun <= 0 && dist < 18) {
+        z.root.rotation.y = Math.atan2(dxp, dzp);
+        z.moving = chaseStep(z, dt, 3.4, dist, 0.9);
+        if (dist < 1.4 && z.attackCd <= 0 && py < 0.5) {
+            z.attackCd = 0.8;
+            if (damagePlayer(5, z.x, z.z)) { z.vx = -dxp / dist * 7; z.vz = -dzp / dist * 7; z.stun = 0.4; }
+        }
+    }
+    z.phase += z.moving ? dt * 16 : dt * 2;
+    z.legs.forEach((l, k) => { l.rotation.y = l.base + Math.sin(z.phase + k * 1.3) * 0.3; });
+    z.root.position.set(z.x, FLOOR_Y + z.y, z.z);
+}
+
+function shootArrow(z) {
+    const sx = z.x, sz = z.z, sy = FLOOR_Y + 1.5;
+    const tx = camera.position.x + (Math.random() - 0.5) * 0.8, tz = camera.position.z + (Math.random() - 0.5) * 0.8, ty = camera.position.y - 0.2;
+    const dx = tx - sx, dy = ty - sy, dz = tz - sz, d = Math.hypot(dx, dy, dz) || 1;
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 0.55), arrowMat);
+    mesh.position.set(sx, sy, sz);
+    mesh.lookAt(tx, ty, tz);
+    scene.add(mesh);
+    arrows.push({ mesh, vx: dx / d * 11, vy: dy / d * 11, vz: dz / d * 11, life: 3 });
+}
+
+function updateArrows(dt) {
+    for (let i = arrows.length - 1; i >= 0; i--) {
+        const a = arrows[i], p = a.mesh.position;
+        p.x += a.vx * dt; p.y += a.vy * dt; p.z += a.vz * dt;
+        a.vy -= 1.5 * dt; a.life -= dt;
+        const c = Math.round(p.x / BLOCK_SIZE), r = Math.round(p.z / BLOCK_SIZE);
+        let dead = a.life <= 0 || p.y < FLOOR_Y || p.y > WALL_HEIGHT - 1 || !map[r] || map[r][c] !== 0;
+        if (!dead && !gameOver && Math.hypot(p.x - camera.position.x, p.z - camera.position.z) < 0.5 &&
+            p.y > camera.position.y - 1.6 && p.y < camera.position.y + 0.2) {
+            damagePlayer(6, p.x - a.vx, p.z - a.vz);
+            dead = true;
+        }
+        if (dead) { scene.remove(a.mesh); arrows.splice(i, 1); }
     }
 }
 
@@ -900,7 +1220,7 @@ function animate() {
             }
         }
 
-        if (!exitOpen && Math.hypot(camera.position.x - GX, camera.position.z - GZ) < 5) {
+        if (stage === 1 && !exitOpen && Math.hypot(camera.position.x - GX, camera.position.z - GZ) < 5) {
             exitOpen = true;
             showAlert('השער נפתח! רוץ החוצה!', '#66ff66');
         }
@@ -913,6 +1233,7 @@ function animate() {
         if (pr + ',' + pc !== lastCell) { lastCell = pr + ',' + pc; distField = computeField(pr, pc); }
         const inside = camera.position.z > 0 && !escaped;
         zombies.forEach(z => updateZombie(z, dt, t, inside));
+        if (stage === 2) updateCave(dt, t);
 
         // קפיצה
         if (keys['Space'] && py === 0) pvy = 7.2;
@@ -929,12 +1250,14 @@ function animate() {
 
         if (mf !== 0) {
             moving = true;
-            const dir = new THREE.Vector3(0, 0, mf).applyQuaternion(camera.quaternion);
+            const dir = { x: Math.sin(camera.rotation.y) * mf, z: Math.cos(camera.rotation.y) * mf };
             const nx = camera.position.x + dir.x * speed, nz = camera.position.z + dir.z * speed;
             if (checkPosition(nx, camera.position.z) === 'free') camera.position.x = nx;
             if (checkPosition(camera.position.x, nz) === 'free') camera.position.z = nz;
 
-            if (!escaped && camera.position.z > GZ + 1.0) { escaped = true; showAlert('כל הכבוד! ברחת מהמבוך! 🎉 אפשר להסתובב בחוץ', '#66ff66'); }
+            if (stage === 1 && escaped && camera.position.z > CAVE.z0 + CAVE.depth - 1.6 && Math.abs(camera.position.x - CAVE.x) < 1.3) startCave();
+            if (stage === 2 && Math.hypot(camera.position.x - GX, camera.position.z - GZ) < 1.8) endGame('ניצחת! עברת את המערה ⛏️🎉');
+            if (stage === 1 && !escaped && camera.position.z > GZ + 1.0) { escaped = true; showAlert('ברחת מהמבוך! 🎉 בדרום יש פתח מערה - היכנס לשלב 2', '#66ff66'); }
 
             if (camera.position.z > 0 && !escaped) {
                 food -= 0.0375 * speed;
@@ -952,7 +1275,7 @@ function animate() {
         if (use) {
             use.t += dt;
             crumbT -= dt;
-            if (crumbT <= 0 && use.t > 0.2) { crumbT = 0.12; crumb(ITEMS[use.id].crumb); }
+            if (crumbT <= 0 && use.t > 0.2) { crumbT = 0.04; crumb(ITEMS[use.id].crumb); crumb(ITEMS[use.id].crumb); }
             if (use.t >= use.dur) finishUse();
         }
     }
@@ -961,32 +1284,32 @@ function animate() {
 
     // טיימרים ואפקטים
     attackCd = Math.max(0, attackCd - dt);
-    swingT = Math.max(0, swingT - dt / 0.35);
+    swingT = Math.max(0, swingT - dt / 0.28);
     equipT = Math.max(0, equipT - dt / 0.25);
     blockT += ((blocking ? 1 : 0) - blockT) * Math.min(1, dt * 14);
 
     // אנימציית חרב כמו במיינקראפט: הרמה אחורה ואז חיתוך אלכסוני
     const u = U();
     let tx = Math.sin(bobPhase) * 5, ty = Math.abs(Math.cos(bobPhase)) * 6, rot = -8, sc = 1, rx = 0, ry = 0;
-    if (swingT > 0) {
-        const p = 1 - swingT, sp = Math.sqrt(p);
-        tx += -Math.sin(sp * Math.PI) * 26 * u;
-        ty += -Math.sin(sp * Math.PI * 2) * 7 * u + Math.sin(p * Math.PI) * 8 * u;
-        rot += -Math.sin(p * p * Math.PI) * 25 - Math.sin(sp * Math.PI) * 45;
-        rx = -Math.sin(sp * Math.PI) * 60;
-        ry = -Math.sin(sp * Math.PI) * 25;
-        sc = 1 + Math.sin(p * Math.PI) * 0.3;
+    if (swingT > 0) { // הנפה מהירה וחלקה: פתיחה חדה אלכסונית ואז חזרה רכה
+        const p = 1 - swingT, ease = k => 1 - Math.pow(1 - k, 3);
+        const e = p < 0.4 ? ease(p / 0.4) : 1 - ease((p - 0.4) / 0.6);
+        tx += -e * 30 * u;
+        ty += -Math.sin(e * Math.PI) * 9 * u + e * 12 * u;
+        rot += -e * 85; rx += -e * 35; ry += -e * 20;
+        sc += e * 0.22;
     }
-    if (use) { // אנימציית אכילה: הפריט עולה לפה ורועד
-        const e = Math.min(1, use.t / 0.2), shake = Math.sin(use.t * 45) * 1.2 * u * e;
-        tx += -e * (window.innerWidth / 2 - 30 - 15 * u);
-        ty += -e * 20 * u + shake;
-        rot += -e * 20 + Math.sin(use.t * 30) * 4 * e;
+    if (use) { // אכילה: רעידה חזקה
+        const e = Math.min(1, use.t / 0.2);
+        tx += -e * (window.innerWidth / 2 - 30 - 15 * u) + Math.sin(use.t * 47) * 1.5 * u * e;
+        ty += -e * 20 * u + Math.sin(use.t * 60) * 2.4 * u * e;
+        rot += -e * 20 + Math.sin(use.t * 50) * 8 * e;
     }
-    tx -= blockT * window.innerWidth * 0.3;
-    ty -= blockT * 12 * u;
-    rot += blockT * 8;
-    sc += blockT * 0.25;
+    // חסימה: מרכז־ימין של המסך, בהטיה קדימה
+    tx -= blockT * (0.32 * window.innerWidth - 30 - 15 * u);
+    ty -= blockT * 14 * u;
+    rx += -blockT * 35; ry += -blockT * 28; rot += blockT * 6;
+    sc += blockT * 0.3;
     ty += equipT * 40 * u;
     heldItem.style.transform = `perspective(800px) translate(${tx}px,${ty}px) rotateX(${rx}deg) rotateY(${ry}deg) rotate(${rot}deg) scale(${sc})`;
 
@@ -1007,6 +1330,7 @@ function animate() {
         if (p.t > 0.9) { scene.remove(p.s); pops.splice(i, 1); }
     }
     document.getElementById('prompt').style.display = !gameOver && nearChest() ? 'block' : 'none';
+    document.getElementById('lockHint').style.display = locked() || gameOver ? 'none' : 'block';
 
     // אפקטים פעילים
     const fxText = (speedT > 0 ? '⚡ מהירות ' + Math.ceil(speedT) + '<br>' : '') + (strengthT > 0 ? '💪 כוח ' + Math.ceil(strengthT) : '');
