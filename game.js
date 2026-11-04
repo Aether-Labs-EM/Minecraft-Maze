@@ -42,28 +42,8 @@ function toTexture(canvas, rx = 1, ry = 1) {
     return t;
 }
 
-function cobbleCanvas() {
-    const c = makeCanvas(16, 16), ctx = c.getContext('2d'), rand = mulberry32(7);
-    noiseRect(ctx, 0, 0, 16, 16, [58, 58, 58], 8, rand);
-    [[0,0,5,5],[6,0,5,4],[12,0,4,5],[0,6,4,4],[5,5,6,5],[12,6,4,4],[0,11,6,5],[7,11,4,5],[12,11,4,5]]
-        .forEach(([x, y, w, h]) => { const g = 105 + ((rand() * 30) | 0); noiseRect(ctx, x, y, w, h, [g, g, g], 14, rand); });
-    return c;
-}
 
-function stoneBrickCanvas() {
-    const c = makeCanvas(16, 16), ctx = c.getContext('2d'), rand = mulberry32(11);
-    noiseRect(ctx, 0, 0, 16, 16, [128, 128, 128], 9, rand);
-    ctx.fillStyle = '#505050';
-    ctx.fillRect(0, 7, 16, 1); ctx.fillRect(0, 15, 16, 1);
-    ctx.fillRect(7, 0, 1, 7); ctx.fillRect(3, 8, 1, 7); ctx.fillRect(11, 8, 1, 7);
-    return c;
-}
 
-function grassCanvas() {
-    const c = makeCanvas(16, 16), ctx = c.getContext('2d'), rand = mulberry32(3);
-    noiseRect(ctx, 0, 0, 16, 16, [92, 150, 58], 20, rand);
-    return c;
-}
 
 function gateCanvas() { // שער הכניסה
     const c = makeCanvas(16, 16), ctx = c.getContext('2d');
@@ -92,37 +72,102 @@ function rectsCanvas(list) { const c = makeCanvas(16, 16); fillRects(c.getContex
 const compassCanvas = () => rectsCanvas([['#555',3,1,10,14],['#555',1,3,14,10],['#d8d8d8',3,3,10,10],['#d02020',7,4,2,4],['#ffffff',7,8,2,4],['#222',7,7,2,2]]);
 const potionCanvas = col => rectsCanvas([['#dfe9f0',7,1,2,2],['#dfe9f0',6,3,4,1],['#9fb4c0',4,4,8,10],[col,5,7,6,6],['#ffffff',5,5,1,2]]);
 
-function plankCanvas() {
-    const c = makeCanvas(16, 16), ctx = c.getContext('2d');
-    noiseRect(ctx, 0, 0, 16, 16, [150, 110, 60], 10, mulberry32(5));
-    ctx.fillStyle = '#6b4a22';
-    [3, 7, 11, 15].forEach(y => ctx.fillRect(0, y, 16, 1));
-    return c;
-}
 function chestFrontCanvas() {
     const c = plankCanvas();
     fillRects(c.getContext('2d'), [['#cfcfcf', 7, 0, 2, 5], ['#555', 7, 4, 2, 1], ['#3a2a12', 0, 0, 16, 1]]);
     return c;
 }
+function sunCanvas() { return rectsCanvas([['#ffe46b', 0, 0, 16, 16], ['#fff3a0', 2, 2, 12, 12], ['#ffffff', 4, 4, 8, 8]]); }
+
+
+
+// ===== טקסטורות בסגנון מיינקראפט =====
+function cobbleCanvas() { // אבן מסותתת עם הצללת קצוות
+    const c = makeCanvas(16, 16), ctx = c.getContext('2d'), rand = mulberry32(7);
+    noiseRect(ctx, 0, 0, 16, 16, [52, 52, 52], 8, rand);
+    [[0,0,5,5],[6,0,5,4],[12,0,4,5],[0,6,4,4],[5,5,6,5],[12,6,4,4],[0,11,6,5],[7,11,4,5],[12,11,4,5]].forEach(([x, y, w, h]) => {
+        const g = 112 + ((rand() * 26) | 0);
+        noiseRect(ctx, x, y, w, h, [g, g, g], 10, rand);
+        ctx.fillStyle = 'rgba(255,255,255,0.18)'; ctx.fillRect(x, y, w, 1); ctx.fillRect(x, y, 1, h);
+        ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(x, y + h - 1, w, 1); ctx.fillRect(x + w - 1, y, 1, h);
+    });
+    return c;
+}
+function stoneCanvas() { // אבן חלקה: אפור עם כתמים כהים ובהירים
+    const c = makeCanvas(16, 16), ctx = c.getContext('2d'), rand = mulberry32(41);
+    noiseRect(ctx, 0, 0, 16, 16, [128, 128, 128], 7, rand);
+    for (let i = 0; i < 26; i++) {
+        ctx.fillStyle = rand() < 0.6 ? 'rgba(80,80,80,0.5)' : 'rgba(175,175,175,0.45)';
+        ctx.fillRect((rand() * 16) | 0, (rand() * 16) | 0, rand() < 0.3 ? 2 : 1, 1);
+    }
+    return c;
+}
+function oreCanvas(rgb, seed) { // אבן עם כתמי עפרה
+    const c = stoneCanvas(), ctx = c.getContext('2d'), rand = mulberry32(seed);
+    for (let k = 0; k < 6; k++) {
+        const bx = 1 + ((rand() * 12) | 0), by = 1 + ((rand() * 12) | 0);
+        [[0, 0], [1, 0], [0, 1], [1, 1], [rand() < 0.5 ? 2 : -1, 0], [0, rand() < 0.5 ? 2 : -1]].forEach(([dx, dy]) => noiseRect(ctx, bx + dx, by + dy, 1, 1, rgb, 18, rand));
+    }
+    return c;
+}
+function lavaCanvas() {
+    const c = makeCanvas(16, 16), ctx = c.getContext('2d'), rand = mulberry32(17);
+    noiseRect(ctx, 0, 0, 16, 16, [225, 95, 15], 35, rand);
+    for (let i = 0; i < 40; i++) {
+        ctx.fillStyle = rand() < 0.6 ? 'rgba(255,220,60,0.8)' : 'rgba(150,40,0,0.6)';
+        ctx.fillRect((rand() * 16) | 0, (rand() * 16) | 0, 1 + ((rand() * 2) | 0), 1);
+    }
+    return c;
+}
+function grassCanvas() {
+    const c = makeCanvas(16, 16), ctx = c.getContext('2d'), rand = mulberry32(3);
+    noiseRect(ctx, 0, 0, 16, 16, [104, 168, 62], 12, rand);
+    for (let i = 0; i < 40; i++) {
+        ctx.fillStyle = rand() < 0.55 ? 'rgba(60,120,40,0.55)' : 'rgba(150,210,100,0.45)';
+        ctx.fillRect((rand() * 16) | 0, (rand() * 16) | 0, 1, 1);
+    }
+    return c;
+}
+function stoneBrickCanvas() {
+    const c = makeCanvas(16, 16), ctx = c.getContext('2d'), rand = mulberry32(11);
+    noiseRect(ctx, 0, 0, 16, 16, [128, 128, 128], 7, rand);
+    ctx.fillStyle = '#555555';
+    ctx.fillRect(0, 7, 16, 1); ctx.fillRect(0, 15, 16, 1); ctx.fillRect(7, 0, 1, 7); ctx.fillRect(3, 8, 1, 7); ctx.fillRect(11, 8, 1, 7);
+    ctx.fillStyle = 'rgba(255,255,255,0.16)';
+    ctx.fillRect(0, 0, 16, 1); ctx.fillRect(0, 8, 16, 1);
+    return c;
+}
+function plankCanvas() {
+    const c = makeCanvas(16, 16), ctx = c.getContext('2d'), rand = mulberry32(5);
+    noiseRect(ctx, 0, 0, 16, 16, [158, 126, 76], 9, rand);
+    ctx.fillStyle = '#6e5230';
+    [3, 7, 11, 15].forEach(y => ctx.fillRect(0, y, 16, 1));
+    [[5, 0], [12, 4], [3, 8], [10, 12]].forEach(([x, y]) => ctx.fillRect(x, y, 1, 3));
+    ctx.fillStyle = 'rgba(255,255,255,0.12)';
+    [0, 4, 8, 12].forEach(y => ctx.fillRect(0, y, 16, 1));
+    return c;
+}
 function logCanvas() {
+    const c = makeCanvas(16, 16), ctx = c.getContext('2d'), rand = mulberry32(8);
+    noiseRect(ctx, 0, 0, 16, 16, [104, 82, 50], 10, rand);
+    for (let i = 0; i < 9; i++) { ctx.fillStyle = 'rgba(50,34,16,0.6)'; ctx.fillRect((rand() * 16) | 0, (rand() * 10) | 0, 1, 4 + ((rand() * 6) | 0)); }
+    return c;
+}
+function logTopCanvas() { // טבעות גזע
     const c = makeCanvas(16, 16), ctx = c.getContext('2d');
-    noiseRect(ctx, 0, 0, 16, 16, [110, 80, 45], 12, mulberry32(8));
-    ctx.fillStyle = '#4a3418';
-    [2, 5, 8, 11, 14].forEach(x => ctx.fillRect(x, 0, 1, 16));
+    for (let i = 0; i < 8; i++) { ctx.fillStyle = i === 0 ? '#665032' : i % 2 ? '#b9945a' : '#9c7a45'; ctx.fillRect(i, i, 16 - 2 * i, 16 - 2 * i); }
     return c;
 }
 function leavesCanvas() {
     const c = makeCanvas(16, 16), ctx = c.getContext('2d'), rand = mulberry32(13);
     for (let x = 0; x < 16; x++) for (let y = 0; y < 16; y++) {
         if (rand() < 0.2) continue;
-        const g = 90 + rand() * 50;
-        ctx.fillStyle = `rgb(${g * 0.45 | 0},${g | 0},${g * 0.3 | 0})`;
+        const g = 95 + rand() * 55;
+        ctx.fillStyle = `rgb(${g * 0.4 | 0},${g | 0},${g * 0.28 | 0})`;
         ctx.fillRect(x, y, 1, 1);
     }
     return c;
 }
-function sunCanvas() { return rectsCanvas([['#ffe46b', 0, 0, 16, 16], ['#fff3a0', 2, 2, 12, 12], ['#ffffff', 4, 4, 8, 8]]); }
-
 
 // ===== אייטמים בפיקסל ארט עם קו מתאר כהה (כמו במיינקראפט) =====
 function outlineCanvas(c) {
@@ -264,7 +309,8 @@ Object.keys(iconCanvases).forEach(k => iconURLs[k] = iconCanvases[k].toDataURL()
 const iconTex = {};
 const plankMat = new THREE.MeshLambertMaterial({ map: toTexture(plankCanvas()) });
 const chestFrontMat = new THREE.MeshLambertMaterial({ map: toTexture(chestFrontCanvas()) });
-const logMat = new THREE.MeshLambertMaterial({ map: toTexture(logCanvas(), 1, 5) });
+const logSide = new THREE.MeshLambertMaterial({ map: toTexture(logCanvas(), 1, 5) }), logTop = new THREE.MeshLambertMaterial({ map: toTexture(logTopCanvas()) });
+const logMat = [logSide, logSide, logTop, logTop, logSide, logSide];
 const leafMat = new THREE.MeshLambertMaterial({ map: toTexture(leavesCanvas(), 3, 1), transparent: true, alphaTest: 0.5 });
 
 
@@ -416,9 +462,9 @@ for (let i = 0; i < 22; i++) {
 
 // תיבות בנקודות מבוי סתום
 const chests = [];
-function createChest(r, c) {
-    let dir = [0, 1];
-    [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dr, dc]) => { if (map[r + dr] && map[r + dr][c + dc] === 0) dir = [dr, dc]; });
+function createChest(r, c, forceDir) {
+    let dir = forceDir || [0, 1];
+    if (!forceDir) [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dr, dc]) => { if (map[r + dr] && map[r + dr][c + dc] === 0) dir = [dr, dc]; });
     const mats = [plankMat, plankMat, plankMat, plankMat, chestFrontMat, plankMat];
     const root = new THREE.Group();
     root.position.set(c * BLOCK_SIZE - dir[1] * 0.55, FLOOR_Y, r * BLOCK_SIZE - dir[0] * 0.55);
@@ -561,7 +607,7 @@ for (let i = 0; i < 10; i++) { heartsEl.appendChild(new Image()); foodEl.appendC
 
 // ===== אייטמים =====
 const ITEMS = {
-    sword: { name: 'חרב ברזל (קליק ימני לחסימה)' },
+    sword: { name: 'חרב ברזל (ימני: חסימה, שמאלי על עפרה: כרייה)' },
     apple: { name: 'תפוח', use: 'eat', food: 30, heal: 25, crumb: '#cc0000' },
     bread: { name: 'לחם', use: 'eat', food: 35, heal: 5, crumb: '#c68a3b' },
     steak: { name: 'סטייק', use: 'eat', food: 55, heal: 10, crumb: '#8a4a22' },
@@ -806,7 +852,7 @@ function swingSwordAndAttack() {
         const dx = z.x - camera.position.x, dz = z.z - camera.position.z, d = Math.hypot(dx, dz);
         if (d < bestD && (dx * fx + dz * fz) / (d || 1) > 0.6) { best = z; bestD = d; }
     });
-    if (best) hitZombie(best, dmg);
+    if (best) hitZombie(best, dmg); else mineAhead();
 }
 
 window.addEventListener('keydown', e => {
@@ -846,13 +892,16 @@ function checkPosition(x, z, forZombie = false) {
     const pts = [[x + radius, z + radius], [x - radius, z + radius], [x + radius, z - radius], [x - radius, z - radius]];
     for (const [px, pz] of pts) {
         const col = Math.round(px / BLOCK_SIZE), row = Math.round(pz / BLOCK_SIZE);
-        if (row >= OUT_MAX_R - 1 || col <= OUT_MIN_C || col >= OUT_MAX_C - 1) return 'wall';
+        if (stage === 1 && (row >= OUT_MAX_R - 1 || col <= OUT_MIN_C || col >= OUT_MAX_C - 1)) return 'wall';
         if (row < 0) { if (col !== 1) return 'wall'; continue; }
         if (isGateClosed && pz < -0.2) return 'wall';
         if (row < map.length && col >= 0 && col < map[0].length) {
             const v = map[row][col];
             if (v === 1) return 'wall';
             if (v === 2 && (forZombie || !exitOpen)) return 'wall';
+        } else if (stage === 2) {
+            const v = cellAt(row, col);
+            if (v === -1 || v === 1) return 'wall';
         }
     }
     return 'free';
@@ -935,18 +984,24 @@ function updateZombie(z, dt, t, playerInside) {
 function drawMinimap() {
     minimapCtx.clearRect(0, 0, 130, 130);
     const pc = camera.position.x / BLOCK_SIZE, pr = camera.position.z / BLOCK_SIZE;
-    const range = 4, tile = 130 / (range * 2 + 1);
+    const range = stage === 2 ? 5 : 4, tile = 130 / (range * 2 + 1);
     for (let r = -range; r <= range; r++) for (let c = -range; c <= range; c++) {
         const mr = Math.round(pr + r), mc = Math.round(pc + c);
-        if (mr >= 0 && mr < map.length && mc >= 0 && mc < map[0].length) {
-            minimapCtx.fillStyle = map[mr][mc] === 1 ? '#616161' : map[mr][mc] === 2 ? '#ffaa00' : '#488528';
-            minimapCtx.fillRect((c + range) * tile, (r + range) * tile, tile, tile);
+        let col = null;
+        if (stage === 2) { // מפת מערה: אבן, עפרות, לבה ושער
+            const v = cellAt(mr, mc);
+            if (v === 1) { const o = ores.get(mr + ',' + mc); col = o ? o.type.color : '#6e6e6e'; }
+            else if (v === 0) col = '#262626'; else if (v === 2) col = '#a07840'; else if (v === 3) col = '#e25822';
+        } else if (mr >= 0 && mr < map.length && mc >= 0 && mc < map[0].length) {
+            col = map[mr][mc] === 1 ? '#616161' : map[mr][mc] === 2 ? '#ffaa00' : '#488528';
         }
+        if (col) { minimapCtx.fillStyle = col; minimapCtx.fillRect((c + range) * tile, (r + range) * tile, tile, tile); }
     }
-    const dot = (wx, wz, col) => {
+    const dot = (wx, wz, col, sz = 3) => {
         const x = (wx / BLOCK_SIZE - pc + range + 0.5) * tile, y = (wz / BLOCK_SIZE - pr + range + 0.5) * tile;
-        if (x > 0 && x < 130 && y > 0 && y < 130) { minimapCtx.fillStyle = col; minimapCtx.fillRect(x - 3, y - 3, 6, 6); }
+        if (x > 0 && x < 130 && y > 0 && y < 130) { minimapCtx.fillStyle = col; minimapCtx.fillRect(x - sz, y - sz, sz * 2, sz * 2); }
     };
+    if (stage === 2) torches.forEach(t => dot(t.x, t.z, '#ffb030', 1.5));
     chests.forEach(c => { if (!c.open) dot(c.root.position.x, c.root.position.z, '#ffd24a'); });
     zombies.forEach(z => { if (!z.dying) dot(z.x, z.z, z.kind === 'skeleton' ? '#e0e0e0' : z.kind === 'spider' ? '#c04030' : '#4caf50'); });
     minimapCtx.fillStyle = '#f00';
@@ -955,8 +1010,9 @@ function drawMinimap() {
     minimapCtx.beginPath(); minimapCtx.moveTo(65, 65);
     minimapCtx.lineTo(65 - Math.sin(camera.rotation.y) * 12, 65 - Math.cos(camera.rotation.y) * 12);
     minimapCtx.stroke();
-    if (hasItem('compass')) { // חץ מצפן ליציאה
-        const dx = GX - camera.position.x, dz = GZ - camera.position.z, d = Math.hypot(dx, dz) || 1;
+    if (hasItem('compass')) { // מצפן: חץ ליעד (שער, ואז משואה במערה הגדולה)
+        const goal = stage === 2 && camera.position.z > GZ + 1 ? BEACON : { x: GX, z: GZ };
+        const dx = goal.x - camera.position.x, dz = goal.z - camera.position.z, d = Math.hypot(dx, dz) || 1;
         minimapCtx.fillStyle = '#00e5ff';
         minimapCtx.beginPath(); minimapCtx.arc(65 + dx / d * 52, 65 + dz / d * 52, 6, 0, Math.PI * 2); minimapCtx.fill();
     }
@@ -981,65 +1037,209 @@ function flameCanvas() {
 }
 const flameTex = toTexture(flameCanvas());
 
+const ORE_TYPES = [
+    { id: 'coal', name: 'פחם', color: '#2b2b2b', blob: [40, 40, 40], hits: 2, w: 45 },
+    { id: 'iron', name: 'ברזל', color: '#d8af93', blob: [216, 175, 147], hits: 3, w: 25 },
+    { id: 'gold', name: 'זהב', color: '#fcee4b', blob: [252, 238, 75], hits: 3, w: 12 },
+    { id: 'redstone', name: 'רדסטון', color: '#c81414', blob: [200, 20, 20], hits: 3, w: 10 },
+    { id: 'diamond', name: 'יהלום', color: '#5decf5', blob: [93, 236, 245], hits: 4, w: 8 }];
+const oreCount = {};
+ORE_TYPES.forEach(o => oreCount[o.id] = 0);
+const ores = new Map();
+let cavGrid = [], caveDoor = null;
+const CAV_ROWS = 20;
+const BEACON = { x: 12 * BLOCK_SIZE, z: (mazeSize + 17) * BLOCK_SIZE };
+
+const oreEl = document.createElement('div');
+Object.assign(oreEl.style, { position: 'absolute', left: '15px', bottom: '15px', color: '#fff', fontWeight: 'bold', fontSize: '15px',
+    textShadow: '2px 2px #000', pointerEvents: 'none', display: 'none', direction: 'ltr' });
+document.body.appendChild(oreEl);
+function updateOreHud() {
+    oreEl.innerHTML = ORE_TYPES.map(o => `<div><span style="display:inline-block;width:14px;height:14px;background:${o.color};border:2px solid #000;vertical-align:middle"></span> ${o.name}: ${oreCount[o.id]}</div>`).join('');
+}
+function cellAt(r, c) { // -1 = מחוץ לעולם
+    if (c < 0 || c >= mazeSize || r < 0) return -1;
+    if (r < mazeSize) return map[r][c];
+    const row = cavGrid[r - mazeSize];
+    return row ? row[c] : -1;
+}
+function pickOre() {
+    let x = Math.random() * ORE_TYPES.reduce((a, o) => a + o.w, 0);
+    for (const o of ORE_TYPES) { x -= o.w; if (x <= 0) return o; }
+    return ORE_TYPES[0];
+}
+function makeMats(ry) {
+    const mk = cv => new THREE.MeshLambertMaterial({ map: toTexture(cv, 2, ry) });
+    return { stone: mk(stoneCanvas()), cobble: mk(cobbleCanvas()), ore: ORE_TYPES.map((o, i) => mk(oreCanvas(o.blob, 100 + i * 7))) };
+}
+
+// כרייה: מכה בעפרה שמולך (קליק שמאלי)
+function mineAhead() {
+    if (stage !== 2) return;
+    const fx = -Math.sin(camera.rotation.y), fz = -Math.cos(camera.rotation.y);
+    for (let d = 0.5; d <= 3.0; d += 0.25) {
+        const r = Math.round((camera.position.z + fz * d) / BLOCK_SIZE), c = Math.round((camera.position.x + fx * d) / BLOCK_SIZE);
+        const key = r + ',' + c, ore = ores.get(key);
+        if (ore) {
+            ore.hp--;
+            for (let k = 0; k < 3; k++) crumb(ore.type.color);
+            if (ore.hp <= 0) breakOre(key, ore);
+            return;
+        }
+        const v = cellAt(r, c);
+        if (v !== 0 && v !== 3) return;
+    }
+}
+function breakOre(key, ore) {
+    scene.remove(ore.mesh);
+    ores.delete(key);
+    const [r, c] = key.split(',').map(Number);
+    if (r < mazeSize) map[r][c] = 0; else cavGrid[r - mazeSize][c] = 0;
+    lastCell = '';
+    const id = ore.type.id;
+    oreCount[id]++;
+    updateOreHud();
+    if (id === 'coal') food = Math.min(100, food + 8);
+    else if (id === 'iron') health = Math.min(100, health + 10);
+    else if (id === 'gold') { health = Math.min(100, health + 20); food = Math.min(100, food + 10); }
+    else if (id === 'redstone') speedT += 15;
+    else { strengthT += 25; health = Math.min(100, health + 15); }
+    showAlert('קיבלת ' + ore.type.name + '!', id === 'coal' ? '#bbbbbb' : ore.type.color);
+}
+
 function startCave() {
     stage = 2; escaped = false; exitOpen = false; use = null;
     [...scene.children].forEach(o => scene.remove(o));
     zombies.length = 0; chests.length = 0; foodItems.length = 0; pops.length = 0; clouds.length = 0; treeSpots.length = 0; solidBoxes.length = 0;
+    ores.clear(); ORE_TYPES.forEach(o => oreCount[o.id] = 0);
     scene.background = new THREE.Color(0x030303);
-    scene.fog = new THREE.FogExp2(0x030303, 0.06);
+    scene.fog = new THREE.FogExp2(0x030303, 0.055);
     scene.add(new THREE.AmbientLight(0xffffff, 0.2));
 
+    // מבוך מנהרות חדש
     for (let r = 0; r < mazeSize; r++) map[r].fill(1);
     generateMaze(1, 1);
     map[EXIT_ROW][EXIT_COL] = 2;
-    const wallMat = new THREE.MeshLambertMaterial({ map: toTexture(caveStoneCanvas(), 2, 5) });
-    const slabMat = new THREE.MeshLambertMaterial({ map: toTexture(caveStoneCanvas(), 54, 54) });
-    [[FLOOR_Y, -Math.PI / 2], [WALL_HEIGHT - 1, Math.PI / 2]].forEach(([y, rx]) => { // רצפה ותקרה סגורה
-        const m = new THREE.Mesh(new THREE.PlaneGeometry(54, 54), slabMat);
-        m.rotation.x = rx; m.position.set(24, y, 24);
+    const M5 = makeMats(5), M8 = makeMats(8), tallGeo = new THREE.BoxGeometry(BLOCK_SIZE, 7.9, BLOCK_SIZE);
+    const solid = (r, c, tall, oreType) => {
+        const M = tall ? M8 : M5;
+        let mat = M.stone;
+        if (oreType) mat = M.ore[ORE_TYPES.indexOf(oreType)]; else if (Math.random() < 0.15) mat = M.cobble;
+        const m = new THREE.Mesh(tall ? tallGeo : wallGeometry, mat);
+        m.position.set(c * BLOCK_SIZE, tall ? FLOOR_Y + 3.95 : WALL_HEIGHT / 2 - 1, r * BLOCK_SIZE);
         scene.add(m);
-    });
-    for (let r = 0; r < mazeSize; r++) for (let c = 0; c < mazeSize; c++) if (map[r][c] === 1) addWall(c, r, wallMat);
+        if (oreType) ores.set(r + ',' + c, { mesh: m, type: oreType, hp: oreType.hits });
+    };
+    for (let r = 0; r < mazeSize; r++) for (let c = 0; c < mazeSize; c++) if (map[r][c] === 1) {
+        const border = r === 0 || r === mazeSize - 1 || c === 0 || c === mazeSize - 1;
+        solid(r, c, false, !border && Math.random() < 0.07 ? pickOre() : null);
+    }
+    for (let c = 0; c < mazeSize; c++) { // השלמת קיר הצפון של המערה הגדולה עד התקרה
+        if (map[EXIT_ROW][c] === 1 || c === EXIT_COL) {
+            const f = new THREE.Mesh(new THREE.BoxGeometry(BLOCK_SIZE, 3, BLOCK_SIZE), M5.stone);
+            f.position.set(c * BLOCK_SIZE, 5.5, EXIT_ROW * BLOCK_SIZE);
+            scene.add(f);
+        }
+    }
 
-    // שער זהב זוהר ביציאה
-    const gold = new THREE.Mesh(new THREE.BoxGeometry(2, 3.4, 0.4), new THREE.MeshBasicMaterial({ color: 0xffd24a }));
-    gold.position.set(GX, 0.8, GZ);
-    const goldLight = new THREE.PointLight(0xffd24a, 1.2, 10);
-    goldLight.position.set(GX, 0.8, GZ - 1.3);
-    scene.add(gold, goldLight);
+    // רצפות ותקרות: מבוך (נמוכה) ומערה גדולה (גבוהה)
+    const slab = (w, h, cx, cz, y, rx) => {
+        const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshLambertMaterial({ map: toTexture(stoneCanvas(), w, h), color: 0xc8c8c8 }));
+        m.rotation.x = rx; m.position.set(cx, y, cz); scene.add(m);
+    };
+    slab(54, 54, 24, 24, FLOOR_Y, -Math.PI / 2); slab(54, 54, 24, 24, WALL_HEIGHT - 1, Math.PI / 2);
+    slab(54, 44, 24, 69, FLOOR_Y, -Math.PI / 2); slab(54, 44, 24, 69, 7, Math.PI / 2);
 
-    // לפידים כל ~4-5 בלוקים (אורות מוקצים דינמית ל־8 הלפידים הקרובים)
+    // שער ברזל ביציאה מהמבוך
+    const lintelC = new THREE.Mesh(new THREE.BoxGeometry(2, 2.3, 2), lintelMaterial);
+    lintelC.position.set(GX, 2.85, GZ);
+    caveDoor = new THREE.Mesh(new THREE.BoxGeometry(2, 2.6, 0.2), barsMaterial);
+    caveDoor.position.set(GX, DOOR_CLOSED_Y, GZ);
+    scene.add(lintelC, caveDoor);
+
+    // לפידים
     torches.length = 0;
     const stickMat = new THREE.MeshLambertMaterial({ color: 0x6b4423 }), flameMat = new THREE.SpriteMaterial({ map: flameTex });
-    for (let i = 0; i < 12; i++) for (let j = 0; j < 12; j++) {
-        const r = 2 * i + 1, c = 2 * j + 1;
-        if (map[r][c] !== 0 || (i * 2 + j * 3) % 5 !== 0) continue;
-        const d = [[1, 0], [-1, 0], [0, 1], [0, -1]].find(([dr, dc]) => map[r + dr][c + dc] === 1);
-        if (!d) continue;
-        const x = c * BLOCK_SIZE + d[1] * 0.9, z = r * BLOCK_SIZE + d[0] * 0.9;
+    const placeTorch = (x, z) => {
         const stick = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.5, 0.12), stickMat);
         stick.position.set(x, 0.5, z);
         const flame = new THREE.Sprite(flameMat);
         flame.scale.set(0.38, 0.38, 1); flame.position.set(x, 0.95, z);
         scene.add(stick, flame);
         torches.push({ x, y: 1.1, z });
+    };
+    for (let i = 0; i < 12; i++) for (let j = 0; j < 12; j++) {
+        const r = 2 * i + 1, c = 2 * j + 1;
+        if (map[r][c] !== 0 || (i * 2 + j * 3) % 5 !== 0) continue;
+        const d = [[1, 0], [-1, 0], [0, 1], [0, -1]].find(([dr, dc]) => map[r + dr][c + dc] === 1);
+        if (d) placeTorch(c * BLOCK_SIZE + d[1] * 0.9, r * BLOCK_SIZE + d[0] * 0.9);
     }
+    placeTorch(GX - 0.85, GZ - 0.85); placeTorch(GX + 0.85, GZ - 0.85);
+
+    // המערה הגדולה: מרחב פתוח עם עמודי אבן, אשכולות עפרה ובריכות לבה
+    cavGrid = Array.from({ length: CAV_ROWS }, (_, i) => Array.from({ length: mazeSize }, (_, c) => (c === 0 || c === mazeSize - 1 || i === CAV_ROWS - 1) ? 1 : 0));
+    const free = (i, c) => i >= 1 && i <= 17 && c >= 2 && c <= 22 && !(i <= 3 && c >= 19) && !(i >= 15 && Math.abs(c - 12) <= 3);
+    const oreAt = {};
+    for (let k = 0; k < 16; k++) { const i = 1 + ((Math.random() * 17) | 0), c = 2 + ((Math.random() * 21) | 0); if (free(i, c)) cavGrid[i][c] = 1; }
+    for (let k = 0; k < 9; k++) {
+        const o = pickOre(), i0 = 2 + ((Math.random() * 15) | 0), c0 = 2 + ((Math.random() * 21) | 0);
+        for (let n = 0; n < 3; n++) {
+            const i = i0 + ((Math.random() * 3) | 0) - 1, c = c0 + ((Math.random() * 3) | 0) - 1;
+            if (free(i, c)) { cavGrid[i][c] = 1; oreAt[i + ',' + c] = o; }
+        }
+    }
+    const lavaMat = new THREE.MeshBasicMaterial({ map: toTexture(lavaCanvas(), 2, 2) });
+    for (let k = 0; k < 5; k++) {
+        const i0 = 3 + ((Math.random() * 13) | 0), c0 = 3 + ((Math.random() * 19) | 0);
+        for (let i = i0; i < i0 + 2; i++) for (let c = c0; c < c0 + 2; c++) if (free(i, c) && cavGrid[i][c] === 0) {
+            cavGrid[i][c] = 3;
+            const m = new THREE.Mesh(new THREE.PlaneGeometry(BLOCK_SIZE, BLOCK_SIZE), lavaMat);
+            m.rotation.x = -Math.PI / 2; m.position.set(c * BLOCK_SIZE, FLOOR_Y + 0.02, (mazeSize + i) * BLOCK_SIZE);
+            scene.add(m);
+        }
+    }
+    for (let i = 0; i < CAV_ROWS; i++) for (let c = 0; c < mazeSize; c++) if (cavGrid[i][c] === 1) solid(mazeSize + i, c, true, oreAt[i + ',' + c] || null);
+    [2, 6, 10, 14, 17].forEach(i => { placeTorch(1 * BLOCK_SIZE - 0.9, (mazeSize + i) * BLOCK_SIZE); placeTorch(23 * BLOCK_SIZE + 0.9, (mazeSize + i) * BLOCK_SIZE); });
+
+    // משואה בקצה המערה הגדולה: הגעה אליה מנצחת
+    const beam = new THREE.Mesh(new THREE.BoxGeometry(0.6, 8, 0.6), new THREE.MeshBasicMaterial({ color: 0x5df0f5, transparent: true, opacity: 0.45 }));
+    beam.position.set(BEACON.x, 3, BEACON.z);
+    const base = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.8, 1.2), new THREE.MeshBasicMaterial({ color: 0x5df0f5 }));
+    base.position.set(BEACON.x, FLOOR_Y + 0.4, BEACON.z);
+    const beaconLight = new THREE.PointLight(0x5df0f5, 1.4, 14);
+    beaconLight.position.set(BEACON.x, 1.5, BEACON.z);
+    scene.add(beam, base, beaconLight);
+
     if (!torchLights.length) for (let k = 0; k < 8; k++) torchLights.push(new THREE.PointLight(0xffa24a, 1.6, 13));
     torchLights.forEach(l => scene.add(l));
 
+    // תיבות ומפלצות: במבוך ובמערה הגדולה
     const paths = [];
     for (let r = 1; r < mazeSize; r += 2) for (let c = 1; c < mazeSize; c += 2) if (map[r][c] === 0) paths.push({ r, c });
     const far = paths.filter(s => Math.abs(s.r - 1) + Math.abs(s.c - 1) > 6).sort(() => Math.random() - 0.5);
     const openN = (r, c) => [[1, 0], [-1, 0], [0, 1], [0, -1]].filter(([dr, dc]) => map[r + dr] && map[r + dr][c + dc] === 0).length;
-    far.filter(s => openN(s.r, s.c) === 1).slice(0, 6).forEach(s => createChest(s.r, s.c));
-    far.slice(0, 5).forEach(s => zombies.push(createSkeleton(s.c * BLOCK_SIZE, s.r * BLOCK_SIZE)));
-    far.slice(5, 11).forEach(s => zombies.push(createSpider(s.c * BLOCK_SIZE, s.r * BLOCK_SIZE)));
+    far.filter(s => openN(s.r, s.c) === 1).slice(0, 5).forEach(s => createChest(s.r, s.c));
+    far.slice(0, 4).forEach(s => zombies.push(createSkeleton(s.c * BLOCK_SIZE, s.r * BLOCK_SIZE)));
+    far.slice(4, 9).forEach(s => zombies.push(createSpider(s.c * BLOCK_SIZE, s.r * BLOCK_SIZE)));
+    for (let k = 0; k < 3; k++) {
+        const i = 3 + ((Math.random() * 12) | 0), west = Math.random() < 0.5, c = west ? 1 : 23;
+        if (cavGrid[i][c] === 0) createChest(mazeSize + i, c, [0, west ? 1 : -1]);
+    }
+    const open = [];
+    for (let i = 4; i <= 17; i++) for (let c = 2; c <= 22; c++) if (cavGrid[i][c] === 0) open.push({ i, c });
+    open.sort(() => Math.random() - 0.5);
+    open.slice(0, 3).forEach(o => zombies.push(createSkeleton(o.c * BLOCK_SIZE, (mazeSize + o.i) * BLOCK_SIZE)));
+    open.slice(3, 6).forEach(o => zombies.push(createSpider(o.c * BLOCK_SIZE, (mazeSize + o.i) * BLOCK_SIZE)));
 
+    minimapCanvas.style.borderColor = '#8a8a8a';
+    minimapCanvas.style.backgroundColor = 'rgba(0,0,0,.85)';
+    oreEl.style.display = 'block';
+    updateOreHud();
     camera.position.set(BLOCK_SIZE, EYE_Y, BLOCK_SIZE);
     camera.rotation.set(0, Math.PI, 0);
     py = 0; pvy = 0; lastCell = ''; distField = null;
     health = Math.min(100, health + 25);
-    showAlert('שלב 2: המערה - מצא את שער הזהב', '#cccccc');
+    showAlert('שלב 2: המערה - כרה עפרות ומצא את המשואה', '#cccccc');
 }
 
 function updateCave(dt, t) {
@@ -1050,6 +1250,16 @@ function updateCave(dt, t) {
         const tt = near[k];
         if (tt) { l.position.set(tt.x, tt.y, tt.z); l.intensity = 1.5 + Math.sin(t * 9 + k * 3) * 0.2; } else l.intensity = 0;
     });
+    if (!exitOpen && Math.hypot(camera.position.x - GX, camera.position.z - GZ) < 5) {
+        exitOpen = true;
+        showAlert('השער נפתח! לפניך מערה גדולה', '#66ff66');
+    }
+    const ty = exitOpen ? DOOR_OPEN_Y : DOOR_CLOSED_Y;
+    caveDoor.position.y += Math.sign(ty - caveDoor.position.y) * Math.min(Math.abs(ty - caveDoor.position.y), 1.6 * dt);
+    if (cellAt(Math.round(camera.position.z / BLOCK_SIZE), Math.round(camera.position.x / BLOCK_SIZE)) === 3 && py < 0.4) { // לבה
+        health -= 15 * dt; flashA = Math.max(flashA, 0.3);
+        if (health <= 0) { health = 0; endGame('נשרפת בלבה! 🔥'); }
+    }
 }
 
 function hasLOS(x1, z1, x2, z2) {
@@ -1063,6 +1273,13 @@ function hasLOS(x1, z1, x2, z2) {
 
 // צעד לעבר השחקן לפי שדה המרחקים (כמו הזומבים)
 function chaseStep(z, dt, speed, dist, stopDist) {
+    const farS = (mazeSize - 1) * BLOCK_SIZE + 1;
+    if (stage === 2 && z.z > farS && camera.position.z > farS) { // במערה הגדולה הפתוחה רודפים ישר
+        if (dist <= stopDist) return false;
+        const dx = camera.position.x - z.x, dz = camera.position.z - z.z, d = Math.hypot(dx, dz) || 1;
+        moveEntity(z, dx / d * speed * dt, dz / d * speed * dt, true);
+        return true;
+    }
     const zr = Math.round(z.z / BLOCK_SIZE), zc = Math.round(z.x / BLOCK_SIZE);
     const fv = distField && zr >= 0 && zc >= 0 && zr < mazeSize && zc < mazeSize ? distField[zr][zc] : Infinity;
     if (fv > 14 && dist > 3) return false;
@@ -1256,7 +1473,7 @@ function animate() {
             if (checkPosition(camera.position.x, nz) === 'free') camera.position.z = nz;
 
             if (stage === 1 && escaped && camera.position.z > CAVE.z0 + CAVE.depth - 1.6 && Math.abs(camera.position.x - CAVE.x) < 1.3) startCave();
-            if (stage === 2 && Math.hypot(camera.position.x - GX, camera.position.z - GZ) < 1.8) endGame('ניצחת! עברת את המערה ⛏️🎉');
+            if (stage === 2 && Math.hypot(camera.position.x - BEACON.x, camera.position.z - BEACON.z) < 1.8) endGame('ניצחת! הגעת ללב המערה הגדולה ⛏️💎');
             if (stage === 1 && !escaped && camera.position.z > GZ + 1.0) { escaped = true; showAlert('ברחת מהמבוך! 🎉 בדרום יש פתח מערה - היכנס לשלב 2', '#66ff66'); }
 
             if (camera.position.z > 0 && !escaped) {
