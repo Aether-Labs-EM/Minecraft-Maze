@@ -10,6 +10,7 @@
             overflow: hidden;
             background-color: #000;
             font-family: 'Courier New', monospace;
+            touch-action: none; /* מונע גלילה בטלפון */
         }
         canvas { image-rendering: pixelated; }
         #ui {
@@ -24,20 +25,83 @@
         }
         #ui h2 { margin: 0 0 6px; }
         #ui p { margin: 2px 0; }
+
+        /* ממשק מולטיפלייר */
+        #multiplayer-ui {
+            position: absolute;
+            top: 20px;
+            left: 170px;
+            z-index: 100;
+            background: rgba(0,0,0,0.6);
+            padding: 10px;
+            border: 2px solid #fff;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        #multiplayer-ui button, #multiplayer-ui input {
+            padding: 5px;
+            font-family: inherit;
+        }
+
+        /* כפתורים למובייל */
+        #joystick-zone { 
+            position: absolute; 
+            bottom: 20px; 
+            left: 20px; 
+            width: 150px; 
+            height: 150px; 
+            display: none; 
+            z-index: 100;
+        }
+        #action-btn { 
+            position: absolute; 
+            bottom: 40px; 
+            right: 40px; 
+            width: 70px; 
+            height: 70px; 
+            background: rgba(255,255,255,0.4); 
+            border-radius: 50%; 
+            display: none; 
+            font-size: 30px; 
+            border: 3px solid white; 
+            z-index: 100; 
+            color: white;
+            user-select: none;
+        }
+
+        @media (max-width: 768px) {
+            #joystick-zone, #action-btn { display: block; }
+            #ui { font-size: 10px; right: 10px; }
+            #multiplayer-ui { left: 10px; top: 160px; font-size: 12px; }
+        }
     </style>
 </head>
 <body>
     <div id="ui">
         <h2>מבוך מיינקראפט בטא</h2>
-        <p>WASD / חצים: תנועה | עכבר: סיבוב (לחץ על המסך)</p>
-        <p>רווח: קפיצה | קליק שמאלי: תקיפה</p>
-        <p>E / קליק ימני: פתיחת תיבה, אכילה, שתייה</p>
-        <p>חסימה: החזק קליק ימני עם מגן או חרב</p>
-        <p>כרייה (במערה): קליק שמאלי על עפרה</p>
-        <p>1-9 / גלגלת: החלפת פריט בהוטבר</p>
+        <p>WASD / חצים: תנועה | עכבר: סיבוב</p>
+        <p>רווח: קפיצה | שמאלי: תקיפה/החזק לכרייה</p>
+        <p>E / ימני: פתיחת תיבה, אכילה</p>
+        <p>חסימה: החזק קליק ימני</p>
+        <p>1-9 / גלגלת: החלפת פריט</p>
     </div>
 
+    <div id="multiplayer-ui">
+        <button onclick="hostGame()">צור חדר (Host)</button>
+        <div id="myIdDisplay"></div>
+        <input type="text" id="joinId" placeholder="הכנס קוד חבר">
+        <button onclick="joinGame()">הצטרף לחדר</button>
+    </div>
+
+    <div id="joystick-zone"></div>
+    <button id="action-btn">⚔️</button>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
     <script src="game.js"></script>
 </body>
 </html>
